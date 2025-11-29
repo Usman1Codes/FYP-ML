@@ -13,9 +13,9 @@ PROJECT_ROOT = "."
 
 # EXACT filenames based on your directory structure
 PATHS = {
-    "intent_config": os.path.join(PROJECT_ROOT, "config/intent-variable.json"),
-    "mock_db": os.path.join(PROJECT_ROOT, "config/mock-database.json"),
-    "templates": os.path.join(PROJECT_ROOT, "config/reponse-templates.json"),
+    "intent_config": os.path.join(PROJECT_ROOT, "Intent-Templates/intent-variable.json"),
+    "mock_db": os.path.join(PROJECT_ROOT, "Intent-Templates/mock-database.json"),
+    "templates": os.path.join(PROJECT_ROOT, "Intent-Templates/reponse-templates.json"),
     "model_dir": os.path.join(PROJECT_ROOT, "models")
 }
 
