@@ -1,0 +1,27 @@
+{
+        "order_status_inquiry": {
+          "missing_info": "I can help check your order status, but I didn't see an order number in your message. Could you please reply with your Order ID (e.g., #12345)?",
+          "success": "Great news. I checked order #{order_id} and the current status is: {status}. Expected delivery: {delivery_date}.",
+          "not_found": "I searched for order #{order_id} but couldn't find it in our system. Please double-check the number."
+        },
+        "inventory_stock_availability": {
+          "missing_info": "I'd be happy to check stock for you. Which specific product or color are you looking for?",
+          "success": "Good news regarding the {product_name}: It is currently {stock_status}.",
+          "not_found": "I couldn't find a product matching '{product_name}' in our catalog. Could you clarify the name?"
+        },
+        "product_information_question": {
+          "missing_info": "I can definitely answer specs questions. Which product are you asking about?",
+          "success": "Here are the details for {product_name}: {specs}",
+          "not_found": "I'm not sure which product you mean by '{product_name}'. Could you provide the full model name?"
+        },
+        "account_password_reset": {
+          "missing_info": "To reset your password, I need to verify your account. Please confirm the email address associated with your login.",
+          "success": "I've triggered a password reset for {email}. Check your inbox for the link.",
+          "not_found": "We don't have an account registered with {email}."
+        },
+        "general_faq_question": {
+          "missing_info": null,
+          "success": "Thanks for reaching out. Based on your question, here is our policy: [Insert General Policy Logic Here]",
+          "not_found": null
+        }
+      }

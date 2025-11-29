@@ -1,0 +1,22 @@
+{
+        "order_status_inquiry": {
+          "required_entities": ["order_id"],
+          "action_type": "lookup_order"
+        },
+        "inventory_stock_availability": {
+          "required_entities": ["product_name"],
+          "action_type": "check_stock"
+        },
+        "product_information_question": {
+          "required_entities": ["product_name"],
+          "action_type": "get_product_info"
+        },
+        "account_password_reset": {
+          "required_entities": ["email"],
+          "action_type": "trigger_reset"
+        },
+        "general_faq_question": {
+          "required_entities": [],
+          "action_type": "general_reply"
+        }
+      }
