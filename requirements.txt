@@ -3,3 +3,5 @@ numpy
 scikit-learn
 sentence-transformers
 joblib
+jinja2
+google-generativeai

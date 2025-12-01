@@ -118,15 +118,21 @@ class EntityExtractor:
         extracted = {}
         
         if "order_id" in required_entities:
-            extracted["order_id"] = EntityExtractor.extract_order_id(text)
+            val = EntityExtractor.extract_order_id(text)
+            if val:
+                extracted["order_id"] = val
             
         if "email" in required_entities:
-            extracted["email"] = EntityExtractor.extract_email(text)
+            val = EntityExtractor.extract_email(text)
+            if val:
+                extracted["email"] = val
             
         if "product_name" in required_entities:
             if database is None:
                 raise ValueError("Database required for product_name extraction")
-            extracted["product_name"] = EntityExtractor.extract_product(text, database)
+            val = EntityExtractor.extract_product(text, database)
+            if val:
+                extracted["product_name"] = val
             
         return extracted
 

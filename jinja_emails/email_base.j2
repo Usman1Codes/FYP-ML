@@ -1,0 +1,30 @@
+{# templates/email_base.j2 #}
+{% if mood == 'Angry' %}
+Dear {{ user_name | default('Customer') }},
+
+Thank you for reaching out to us. I completely understand your frustration regarding this issue, and I want to assure you that resolving this is my top priority.
+{% elif mood == 'Happy' %}
+Hi {{ user_name | default('Customer') }},
+
+Thank you so much for your kind words! We are thrilled to hear from you.
+{% elif mood == 'Urgent' %}
+Dear {{ user_name | default('Customer') }},
+
+Thank you for contacting us. I understand this is an urgent matter, and I am reviewing your request immediately.
+{% else %}
+Dear {{ user_name | default('Customer') }},
+
+Thank you for contacting JUNO Support. We appreciate the opportunity to assist you.
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% if mood == 'Angry' or mood == 'Urgent' %}
+Sincerely,
+
+**The JUNO Priority Support Team**
+{% else %}
+Best regards,
+
+**The JUNO Support Team**
+{% endif %}

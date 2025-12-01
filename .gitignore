@@ -1,0 +1,13 @@
+# Secrets
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
+
+# JUNO Data (Optional - keep if you want to track mock DB, ignore if real DB)
+# tickets.json

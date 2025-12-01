@@ -1,0 +1,13 @@
+{# templates/email_request_info.j2 #}
+{% extends "email_base.j2" %}
+
+{% block content %}
+To ensure I can provide you with the most accurate assistance, I just need a few more details from you.
+
+Could you please reply with the following information:
+{% for field in missing_fields %}
+*   **{{ field | replace('_', ' ') | title }}**
+{% endfor %}
+
+Once I have this information, I will be able to proceed with your request immediately. Thank you for your cooperation.
+{% endblock %}

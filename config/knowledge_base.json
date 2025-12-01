@@ -1,0 +1,42 @@
+{
+        "faq_entries": [
+                {
+                        "id": "return_policy",
+                        "questions": [
+                                "What is your return policy?",
+                                "Can I return an item?",
+                                "How many days do I have to return?",
+                                "I want to send this back."
+                        ],
+                        "answer": "You can return any item within 30 days of purchase for a full refund, provided it is in original condition."
+                },
+                {
+                        "id": "shipping_times",
+                        "questions": [
+                                "How long does shipping take?",
+                                "When will I get my package?",
+                                "What are your delivery times?",
+                                "Is shipping fast?"
+                        ],
+                        "answer": "Standard shipping takes 3-5 business days. Express shipping (1-2 days) is available at checkout."
+                },
+                {
+                        "id": "store_hours",
+                        "questions": [
+                                "When are you open?",
+                                "What are your store hours?",
+                                "Are you open on weekends?"
+                        ],
+                        "answer": "Our support team is available Mon-Fri from 9 AM to 5 PM EST."
+                },
+                {
+                        "id": "payment_methods",
+                        "questions": [
+                                "What payment methods do you accept?",
+                                "Can I pay with PayPal?",
+                                "Do you take credit cards?"
+                        ],
+                        "answer": "We accept Visa, Mastercard, American Express, and PayPal."
+                }
+        ]
+}

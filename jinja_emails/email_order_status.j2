@@ -1,0 +1,25 @@
+{# templates/email_order_status.j2 #}
+{% extends "email_base.j2" %}
+
+{% block content %}
+{% if state == 'success' %}
+I have checked our records for **Order #{{ data.order_id }}**, and here is the latest update:
+
+*   **Current Status:** {{ data.status }}
+{% if data.delivery_date %}
+*   **Expected Delivery:** {{ data.delivery_date }}
+{% endif %}
+
+{% if data.tracking_link %}
+You can track your package in real-time here: [Track My Order]({{ data.tracking_link }})
+{% endif %}
+
+If you have any other questions about your shipment, please don't hesitate to ask.
+{% elif state == 'not_found' %}
+I searched our system for **Order #{{ data.order_id }}**, but unfortunately, I was unable to locate a record with that specific number.
+
+Could you please double-check the Order ID? It typically starts with **#** or **ORD-** (e.g., #12345).
+
+If you can provide the correct number or the email address used for the purchase, I will be happy to look it up again for you.
+{% endif %}
+{% endblock %}
