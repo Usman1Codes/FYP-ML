@@ -39,7 +39,7 @@ class ComplianceEngine:
         else:
             try:
                 genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel('gemini-pro')
+                self.model = genai.GenerativeModel('gemini-2.5-flash')
                 print("🛡️ Compliance Engine Armed & Ready.")
             except Exception as e:
                 print(f"❌ Failed to initialize Gemini: {e}")

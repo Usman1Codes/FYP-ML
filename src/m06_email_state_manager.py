@@ -4,6 +4,8 @@ Checks requirements and executes actions (database lookups).
 """
 
 
+from src.m05_entity_extractor import EntityExtractor
+
 class StateManager:
     """
     Checks requirements and executes "Actions" (DB Lookups).

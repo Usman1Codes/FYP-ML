@@ -4,7 +4,7 @@ import os
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.flow_manager import FlowManager
+from src.m09_flow_manager import FlowManager
 
 print("--- TESTING FLOW MANAGER ---")
 manager = FlowManager()

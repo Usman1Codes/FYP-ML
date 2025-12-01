@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import re
+import random
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
@@ -9,182 +10,184 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 # CONFIGURATION
 # ==========================================
 
-# API Key provided by you
-GOOGLE_API_KEY = "AIzaSyCnI5mY1ggt4epJwiYwY-72s61AWg2CQMw"
+# Load API Key from .env manually
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+ENV_PATH = os.path.join(PROJECT_ROOT, ".env")
+GOOGLE_API_KEY = None
+
+if os.path.exists(ENV_PATH):
+    with open(ENV_PATH, "r") as f:
+        for line in f:
+            if line.strip() and not line.startswith("#"):
+                try:
+                    key, value = line.strip().split("=", 1)
+                    if key == "GEMINI_API_KEY":
+                        GOOGLE_API_KEY = value
+                except ValueError:
+                    pass
 
 MODEL_NAME = "gemini-2.5-flash"
-OUTPUT_DIR = "generated_emails_realism"
-TARGET_TOTAL_EMAILS = 500
-BATCH_SIZE = 20  # Smaller batch size = higher quality/focus
+OUTPUT_FILE = os.path.join(PROJECT_ROOT, "data", "mood_training_data.json")
+TARGET_PER_MOOD = 500
+BATCH_SIZE = 20
 
 # ==========================================
-# INTENT LABELS
+# MOOD LABELS & DEFINITIONS
 # ==========================================
-LABELS = [
-    "order_status_inquiry",
-    "product_information_question",
-    "account_password_reset",
-    "general_faq_question",
-    "inventory_stock_availability"
+MOODS = [
+    "Angry",
+    "Happy",
+    "Neutral",
+    "Confused",
+    "Urgent"
 ]
 
 # ==========================================
-# REALISTIC STYLES (GROUNDED)
+# DIVERSITY MATRIX (Styles & Topics)
 # ==========================================
-# Replaced caricatures with realistic email types
+# We mix these to ensure "Angry" isn't just about "Late Orders".
+TOPICS = [
+    "Order Status (Late/Missing)",
+    "Product Defect/Broken",
+    "Return/Refund Request",
+    "Account Access/Password",
+    "Product Question (Specs/Stock)",
+    "Shipping Address Change",
+    "Billing/Payment Issue",
+    "General Feedback"
+]
+
 STYLES = {
-    "Direct & Brief": "Short, to the point. No fluff. Often skips greetings. Typical of busy people.",
-    "Polite & Formal": "Uses proper greetings (Hi, Hello), complete sentences, and polite closings (Thanks, Best regards).",
-    "Frustrated but Civil": "Customer is annoyed by a delay or issue but maintains composure. Not screaming, just stern.",
-    "Mobile/Casual": "Lowercase start sentences occasionally, 'sent from iphone' style, minor grammar relaxations, but FULLY readable.",
-    "Context Heavy": "Explains *why* they need the answer (e.g., 'need this for a birthday Friday', 'moving houses soon').",
-    "Confusion/Help Needed": "Customer doesn't understand the interface or process. Asks clarifying questions."
+    "The Rusher": "Short, typos, lowercase, no punctuation. 'where is my order'",
+    "The Formal": "Excessively polite, proper grammar, 'Dear Sir/Madam'.",
+    "The Rant": "Long, emotional, storytelling. Mentions personal life.",
+    "The Direct": "To the point. 'I need a refund.' No fluff.",
+    "The Confused": "Doesn't understand the process. 'How do I click this?'",
+    "The Broken English": "Grammar errors typical of non-native speakers, but understandable.",
+    "The Karen/Kevin": "Demanding, mentions 'manager', 'lawyer', or 'never buying again'.",
+    "The Happy Camper": "Overly enthusiastic, uses emojis, 'Love your stuff!'."
 }
 
 # ==========================================
 # PROMPT ENGINEERING
 # ==========================================
-def build_prompt(label, style_name, style_desc, count):
-    # Specific instructions to avoid AI-isms and headers
+def build_prompt(mood, topic, style_name, style_desc, count):
     return f"""
-    Generate exactly {count} raw customer support email bodies for the intent: "{label}".
+    Generate exactly {count} unique customer support emails.
     
-    STYLE: {style_name}
-    STYLE GUIDE: {style_desc}
+    TARGET MOOD: "{mood}"
+    TOPIC: "{topic}"
+    WRITING STYLE: "{style_name}" ({style_desc})
     
     CRITICAL INSTRUCTIONS:
-    1. **NO HEADERS:** Do NOT include "Subject:", "Body:", "Email 1:", or numbering. Just the raw text.
-    2. **REALISM:** Do not use gibberish. Use natural English. If using the "Mobile" style, use standard abbreviations (e.g., 'havent' instead of 'haven't') but do not use "wurz my ordu".
-    3. **CONTENT:** specific to {label}. Use realistic fake order IDs (mix of numbers/letters like #10293, #ORD-992).
-    4. **VARIETY:** Mix lengths. Some should be one sentence. Some should be 3-4 sentences.
+    1. **DIVERSITY:** Each email must be unique. Do not repeat phrases.
+    2. **REALISM:** 
+       - If style is "The Rusher", use "u" for "you", skip apostrophes.
+       - If mood is "Neutral", just ask the question plainly.
+       - If mood is "Confused", ask vague questions like "what is haping".
+    3. **CONTEXT:** Use realistic fake Order IDs (#12345), Product Names, and Dates.
+    4. **NO HEADERS:** Return ONLY the raw email body text. No "Subject:", No "Email 1:".
     
     OUTPUT FORMAT:
-    Return ONLY a valid JSON object with this structure:
-    {{ "emails": ["raw email text 1", "raw email text 2"] }}
+    Return ONLY a valid JSON object:
+    {{ "emails": ["email text 1", "email text 2"] }}
     """
 
 # ==========================================
-# FILE HANDLING (INCREMENTAL SAVING)
+# FILE HANDLING
 # ==========================================
-
-def load_existing_data(filepath):
-    if not os.path.exists(filepath):
-        return {"label": "", "count": 0, "emails": []}
+def load_data():
+    if not os.path.exists(OUTPUT_FILE):
+        return []
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
     except:
-        return {"label": "", "count": 0, "emails": []}
+        return []
 
-def save_incremental(label, new_emails):
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
-    
-    filepath = f"{OUTPUT_DIR}/{label}.json"
-    data = load_existing_data(filepath)
-    
-    # Update data
-    data["label"] = label
-    if "emails" not in data: data["emails"] = []
-    
-    # Clean and add new emails
-    cleaned_batch = []
-    for email in new_emails:
-        # Regex to strip "Subject: ..." if the AI accidentally adds it
-        cleaned = re.sub(r'^Subject:.*?\n', '', email, flags=re.IGNORECASE)
-        cleaned = re.sub(r'^Body:\s*', '', cleaned, flags=re.IGNORECASE).strip()
-        cleaned_batch.append(cleaned)
-
-    data["emails"].extend(cleaned_batch)
-    data["count"] = len(data["emails"])
-    
-    with open(filepath, 'w', encoding='utf-8') as f:
+def save_data(data):
+    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    
-    return data["count"]
 
 # ==========================================
 # GENERATION LOGIC
 # ==========================================
-
-async def generate_batch(model, label, style_name, style_desc):
-    prompt = build_prompt(label, style_name, style_desc, BATCH_SIZE)
+async def generate_batch(model, mood, topic, style_name, style_desc):
+    prompt = build_prompt(mood, topic, style_name, style_desc, BATCH_SIZE)
     
     for attempt in range(3):
         try:
             response = await model.generate_content_async(prompt)
             clean_text = response.text.replace("```json", "").replace("```", "").strip()
-            
             if not clean_text: continue
-
-            try:
-                data = json.loads(clean_text)
-                return data.get("emails", [])
-            except json.JSONDecodeError:
-                # Fallback: Try to verify if it's a list even if JSON is slightly broken
-                pass
+            
+            data = json.loads(clean_text)
+            emails = data.get("emails", [])
+            
+            # Format as labeled data
+            return [{"text": e, "mood": mood} for e in emails]
+            
         except Exception as e:
-            print(f"   [Retrying] {style_name}: {e}")
+            print(f"   ⚠️ Retry {attempt+1} for {mood}/{style_name}: {e}")
             await asyncio.sleep(2)
             
     return []
 
-async def process_label(label, semaphore):
+async def process_mood(mood, semaphore):
     async with semaphore:
-        print(f"[{label}] Starting generation...")
-        genai.configure(api_key=GOOGLE_API_KEY)
+        print(f"[{mood}] Starting generation...")
         
+        # Configure Model
+        genai.configure(api_key=GOOGLE_API_KEY)
         model = genai.GenerativeModel(
             model_name=MODEL_NAME,
-            generation_config={
-                "response_mime_type": "application/json", 
-                "temperature": 0.85, # Slightly lowered for more coherent realism
-                "max_output_tokens": 8192 
-            },
-            safety_settings={
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            }
+            generation_config={"response_mime_type": "application/json", "temperature": 0.9}
         )
         
-        # Check current progress
-        filepath = f"{OUTPUT_DIR}/{label}.json"
-        current_data = load_existing_data(filepath)
-        current_count = len(current_data.get("emails", []))
+        # Check Progress
+        all_data = load_data()
+        current_mood_data = [d for d in all_data if d["mood"] == mood]
+        count = len(current_mood_data)
         
-        if current_count >= TARGET_TOTAL_EMAILS:
-            print(f"[{label}] Already has {current_count} emails. Skipping.")
+        if count >= TARGET_PER_MOOD:
+            print(f"[{mood}] ✅ Already has {count} emails. Skipping.")
             return
 
-        # Loop until target reached
-        while current_count < TARGET_TOTAL_EMAILS:
-            for style, desc in STYLES.items():
-                if current_count >= TARGET_TOTAL_EMAILS: break
+        while count < TARGET_PER_MOOD:
+            # Randomly select Topic and Style for this batch to ensure variety
+            topic = random.choice(TOPICS)
+            style_name, style_desc = random.choice(list(STYLES.items()))
+            
+            batch = await generate_batch(model, mood, topic, style_name, style_desc)
+            
+            if batch:
+                # Load, Append, Save (Inefficient but safe for resume)
+                current_all_data = load_data()
+                current_all_data.extend(batch)
+                save_data(current_all_data)
                 
-                batch = await generate_batch(model, label, style, desc)
-                
-                if batch:
-                    # Save immediately (Incremental Saving)
-                    current_count = save_incremental(label, batch)
-                    print(f"   -> {style}: Saved +{len(batch)} (Total: {current_count})")
-                
-                # Rate limit protection
-                await asyncio.sleep(2)
+                count += len(batch)
+                print(f"   -> [{mood}] +{len(batch)} ({style_name} / {topic}) | Total: {count}")
+            
+            await asyncio.sleep(1) # Rate limit safety
 
-        print(f"[{label}] Completed with {current_count} emails.")
+        print(f"[{mood}] 🎉 Completed {count} emails.")
 
 async def main():
-    if GOOGLE_API_KEY == "YOUR_GEMINI_API_KEY":
-        print("ERROR: Please set your API Key.")
+    if not GOOGLE_API_KEY:
+        print("❌ ERROR: GEMINI_API_KEY not found in .env")
         return
 
-    # Semaphore to prevent hitting rate limits (1 active label at a time is safest for Free Tier)
-    semaphore = asyncio.Semaphore(1) 
-    
-    tasks = [process_label(l, semaphore) for l in LABELS]
+    print(f"🚀 Starting Data Generation for {len(MOODS)} Moods...")
+    print(f"🎯 Target: {TARGET_PER_MOOD} emails per mood.")
+    print(f"📂 Output: {OUTPUT_FILE}")
+
+    # Semaphore: 2 concurrent tasks to speed up but respect limits
+    semaphore = asyncio.Semaphore(2)
+    tasks = [process_mood(m, semaphore) for m in MOODS]
     await asyncio.gather(*tasks)
+    print("\n✅ All Data Generation Complete!")
 
 if __name__ == "__main__":
     asyncio.run(main())

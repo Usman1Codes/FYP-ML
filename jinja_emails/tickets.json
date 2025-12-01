@@ -1,1 +1,77 @@
-{}
+{
+  "test_user_1764607340@example.com": {
+    "ticket_id": "31248313-5c6e-42c9-af86-b1685de72f21",
+    "user_id": "test_user_1764607340@example.com",
+    "intent": "product_information_question",
+    "mood": "Neutral",
+    "extracted_entities": {},
+    "missing_fields": [
+      "product_name"
+    ],
+    "status": "PENDING_CUSTOMER",
+    "created_at": "2025-12-01T21:42:26.814755",
+    "updated_at": "2025-12-01T21:42:26.814755",
+    "history": [
+      {
+        "timestamp": "2025-12-01T21:42:26.815650",
+        "sender": "user",
+        "text": "hello what is haping "
+      },
+      {
+        "timestamp": "2025-12-01T21:42:26.823816",
+        "sender": "bot",
+        "text": "\n\n\nDear Test_User_1764607340,\n\nThank you for reaching out to us. I completely understand your frustration regarding this issue, and I want to assure you that resolving this is my top priority.\n\n\n\nTo ensure I can provide you with the most accurate assistance, I just need a few more details from you.\n\nCould you please reply with the following information:\n\n*   **Product Name**\n\n\nOnce I have this information, I will be able to proceed with your request immediately. Thank you for your cooperation.\n\n\n\nSincerely,\n\n**The JUNO Priority Support Team**\n"
+      },
+      {
+        "timestamp": "2025-12-01T21:43:17.888733",
+        "sender": "user",
+        "text": "s"
+      },
+      {
+        "timestamp": "2025-12-01T21:43:17.922075",
+        "sender": "bot",
+        "text": "\n\n\nDear Test_User_1764607340,\n\nThank you for contacting JUNO Support. We appreciate the opportunity to assist you.\n\n\n\nTo ensure I can provide you with the most accurate assistance, I just need a few more details from you.\n\nCould you please reply with the following information:\n\n*   **Product Name**\n\n\nOnce I have this information, I will be able to proceed with your request immediately. Thank you for your cooperation.\n\n\n\nBest regards,\n\n**The JUNO Support Team**\n"
+      }
+    ]
+  },
+  "test_user_1764607479@example.com": {
+    "ticket_id": "5016aa51-a8ff-4be9-9d97-859d069a4f25",
+    "user_id": "test_user_1764607479@example.com",
+    "intent": "product_information_question",
+    "mood": "Neutral",
+    "extracted_entities": {},
+    "missing_fields": [
+      "product_name"
+    ],
+    "status": "PENDING_CUSTOMER",
+    "created_at": "2025-12-01T21:44:41.623252",
+    "updated_at": "2025-12-01T21:44:41.623252",
+    "history": [
+      {
+        "timestamp": "2025-12-01T21:44:41.624711",
+        "sender": "user",
+        "text": "Error generating email: 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods."
+      }
+    ]
+  },
+  "test_user_1764607688@example.com": {
+    "ticket_id": "b52fc68f-04c6-4781-a881-bd288fc5fd38",
+    "user_id": "test_user_1764607688@example.com",
+    "intent": "product_information_question",
+    "mood": "Neutral",
+    "extracted_entities": {},
+    "missing_fields": [
+      "product_name"
+    ],
+    "status": "PENDING_CUSTOMER",
+    "created_at": "2025-12-01T21:48:09.154174",
+    "updated_at": "2025-12-01T21:48:09.154174",
+    "history": [
+      {
+        "timestamp": "2025-12-01T21:48:09.155350",
+        "sender": "user",
+        "text": "Error generating email: 403 Your API key was reported as leaked. Please use another API key."
+      }
+    ]
+  }
+}

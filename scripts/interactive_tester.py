@@ -17,7 +17,7 @@ try:
 except ImportError:
     HAS_GEMINI = False
 
-from src.flow_manager import FlowManager
+from src.m09_flow_manager import FlowManager
 
 # Scenarios Definition
 SCENARIOS = {
@@ -35,7 +35,7 @@ def generate_email(prompt, api_key):
     
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
         return response.text.strip()
     except Exception as e:
@@ -47,7 +47,28 @@ def main():
     print("==========================================")
     
     # Initialize Engine
-    manager = FlowManager()
+    # Initialize Engine
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    
+    # Load .env manually
+    env_path = os.path.join(project_root, ".env")
+    print(f"🔍 Looking for .env at: {env_path}")
+    if os.path.exists(env_path):
+        print("   ✅ Found .env file.")
+        with open(env_path, "r") as f:
+            for line in f:
+                if line.strip() and not line.startswith("#"):
+                    try:
+                        key, value = line.strip().split("=", 1)
+                        os.environ[key] = value
+                        if key == "GEMINI_API_KEY":
+                            print("   ✅ Loaded GEMINI_API_KEY")
+                    except ValueError:
+                        pass # Skip malformed lines
+    else:
+        print("   ❌ .env file NOT found.")
+
+    manager = FlowManager(project_root)
     api_key = os.getenv("GEMINI_API_KEY")
     
     if not api_key:

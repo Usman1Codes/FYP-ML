@@ -4,7 +4,7 @@ import os
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.intent_classifier import IntentClassifier
+from src.m02_intent_classifier import IntentClassifier
 
 # Initialize
 # Note: We need the models directory. Assuming it exists at ../models

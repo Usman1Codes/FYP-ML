@@ -5,13 +5,13 @@ Integrates FAQ, Intent Classification, Ticket Management, and Response Generatio
 """
 
 import os
-from src.intent_classifier import IntentClassifier
-from src.faq_engine import FAQEngine
-from src.ticket_manager import TicketManager
-from src.template_engine import TemplateEngine
-from src.state_manager import StateManager
-from src.entity_extractor import EntityExtractor
-from src.data_loader import DataLoader
+from src.m02_intent_classifier import IntentClassifier
+from src.m03_faq_engine import FAQEngine
+from src.m04_ticket_manager import TicketManager
+from src.m07_jinja_email import TemplateEngine
+from src.m06_email_state_manager import StateManager
+from src.m05_entity_extractor import EntityExtractor
+from src.m01_data_loader import DataLoader
 
 class FlowManager:
     """
