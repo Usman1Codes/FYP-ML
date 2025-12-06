@@ -21,3 +21,6 @@ jinja_emails/test_tickets.json
 
 # Mac
 .DS_Store
+
+# Large Models (Download from Drive)
+models/mood_model/

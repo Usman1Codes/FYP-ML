@@ -195,7 +195,16 @@ The trained model is exported as a zip file and extracted to `models/v2_setfit/`
     ```bash
     pip install -r requirements.txt
     ```
-3.  **Environment Variables**:
+
+### 3. ⚠️ Model Setup (CRITICAL)
+The **Mood Detection Model** (SetFit) is too large for GitHub. You must download it separately.
+
+1.  **Download the Model**: [INSERT_GOOGLE_DRIVE_LINK_HERE]
+2.  **Extract**: Unzip the folder.
+3.  **Place**: Move the contents into `models/mood_model/`.
+    *   Structure should look like: `models/mood_model/model.safetensors`, `config.json`, etc.
+
+### 4. Environment Variables**:
     Create a `.env` file:
     ```
     GEMINI_API_KEY=your_api_key_here
