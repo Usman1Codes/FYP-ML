@@ -30,7 +30,7 @@ class EntityExtractor:
         """
         # Step 1: Look for explicit labeled IDs (High Confidence)
         # Matches: #12345, Order: 12345, Ref 12345
-        explicit_pattern = r'(?:#|Order\s*:?\s*|id\s*:?\s*|ref\s*:?\s*)([A-Z0-9-]{5,})'
+        explicit_pattern = r'(?:#|Order\s*:?\s*|id\s*:?\s*|ref\s*:?\s*)([A-Z0-9-]{4,})'
         match = re.search(explicit_pattern, text, re.IGNORECASE)
         if match:
             return match.group(1)
@@ -43,8 +43,8 @@ class EntityExtractor:
             # Clean punctuation from edges
             clean_token = token.strip(".,?!")
             
-            # Check conditions: Length >= 5 AND contains digit AND allows A-Z, 0-9, -
-            if len(clean_token) >= 5 and any(char.isdigit() for char in clean_token):
+            # Check conditions: Length >= 4 AND contains digit AND allows A-Z, 0-9, -
+            if len(clean_token) >= 4 and any(char.isdigit() for char in clean_token):
                 # Verify it doesn't contain weird symbols (like emails)
                 if re.match(r'^[A-Z0-9-]+$', clean_token, re.IGNORECASE):
                     return clean_token

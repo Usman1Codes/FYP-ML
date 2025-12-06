@@ -1,13 +1,23 @@
-# Secrets
-.env
-*.key
-
 # Python
 __pycache__/
 *.pyc
-venv/
-.venv/
+*.pyo
+*.pyd
+.Python
 env/
+venv/
+.env
 
-# JUNO Data (Optional - keep if you want to track mock DB, ignore if real DB)
-# tickets.json
+# IDE
+.vscode/
+.idea/
+
+# Data
+jinja_emails/tickets.json
+jinja_emails/test_tickets.json
+
+# Logs
+*.log
+
+# Mac
+.DS_Store

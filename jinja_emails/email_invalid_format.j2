@@ -1,0 +1,14 @@
+{# templates/email_invalid_format.j2 #}
+{% extends "email_base.j2" %}
+
+{% block content %}
+I attempted to look up your information, but the data provided seems to be in an unrecognized format.
+
+**Issue:** Invalid {{ data.field_name }} format.
+
+To help me find your records, please ensure:
+*   **Order IDs** start with **#** or **ORD-** (e.g., #12345).
+*   **Email Addresses** are in the standard format (e.g., name@example.com).
+
+Could you please double-check and reply with the correct information?
+{% endblock %}

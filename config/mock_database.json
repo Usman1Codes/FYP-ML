@@ -1,39 +1,60 @@
 {
-        "orders": [
-          {
-            "order_id": "12345",
-            "email": "john@example.com",
-            "status": "Shipped",
-            "tracking_link": "http://track.com/12345",
-            "delivery_date": "2023-11-05"
-          },
-          {
-            "order_id": "99887",
-            "email": "sarah@test.com",
-            "status": "Processing",
-            "tracking_link": null,
-            "delivery_date": "TBD"
-          }
-        ],
-        "products": [
-          {
-            "product_name": "midnight blue jacket",
-            "aliases": ["blue jacket", "midnight coat", "navy jacket"],
-            "stock_status": "In Stock",
-            "specs": "Waterproof, Size M-XL available."
-          },
-          {
-            "product_name": "xl model",
-            "aliases": ["xl unit", "pro model"],
-            "stock_status": "Out of Stock",
-            "specs": "220v compatible, requires converter for 110v."
-          }
-        ],
-        "users": [
-          {
-            "email": "john@example.com",
-            "name": "John Doe",
-            "reset_token": "valid"
-          }
-        ]
-      }
+  "orders": [
+    {
+      "order_id": "12345",
+      "email": "john@example.com",
+      "status": "Shipped",
+      "tracking_link": "http://track.com/12345",
+      "delivery_date": "2023-11-05"
+    },
+    {
+      "order_id": "99887",
+      "email": "sarah@test.com",
+      "status": "Processing",
+      "tracking_link": null,
+      "delivery_date": "TBD"
+    },
+    {
+      "order_id": "1001",
+      "email": "happy_user@example.com",
+      "status": "Shipped",
+      "tracking_link": "http://track.com/1001",
+      "delivery_date": "2023-12-01"
+    },
+    {
+      "order_id": "1002",
+      "email": "slot_user@example.com",
+      "status": "Processing",
+      "tracking_link": null,
+      "delivery_date": "TBD"
+    }
+  ],
+  "products": [
+    {
+      "product_name": "midnight blue jacket",
+      "aliases": [
+        "blue jacket",
+        "midnight coat",
+        "navy jacket"
+      ],
+      "stock_status": "In Stock",
+      "specs": "Waterproof, Size M-XL available."
+    },
+    {
+      "product_name": "xl model",
+      "aliases": [
+        "xl unit",
+        "pro model"
+      ],
+      "stock_status": "Out of Stock",
+      "specs": "220v compatible, requires converter for 110v."
+    }
+  ],
+  "users": [
+    {
+      "email": "john@example.com",
+      "name": "John Doe",
+      "reset_token": "valid"
+    }
+  ]
+}

@@ -13,11 +13,12 @@ class Ticket:
     """
     Represents a single customer support interaction state.
     """
-    def __init__(self, user_id, intent, mood="Neutral", entities=None, missing_fields=None):
+    def __init__(self, user_id, intent, mood="Neutral", entities=None, missing_fields=None, severity="Low"):
         self.ticket_id = str(uuid.uuid4())
         self.user_id = user_id
         self.intent = intent
         self.mood = mood
+        self.severity = severity
         self.extracted_entities = entities or {}
         self.missing_fields = missing_fields or []
         self.status = "OPEN" # OPEN, PENDING_CUSTOMER, RESOLVED
@@ -65,6 +66,7 @@ class Ticket:
             "user_id": self.user_id,
             "intent": self.intent,
             "mood": self.mood,
+            "severity": self.severity,
             "extracted_entities": self.extracted_entities,
             "missing_fields": self.missing_fields,
             "status": self.status,
@@ -80,6 +82,7 @@ class Ticket:
             user_id=data["user_id"],
             intent=data["intent"],
             mood=data.get("mood", "Neutral"),
+            severity=data.get("severity", "Low"),
             entities=data.get("extracted_entities"),
             missing_fields=data.get("missing_fields")
         )
@@ -129,9 +132,20 @@ class TicketManager:
         except Exception as e:
             print(f"❌ Failed to save tickets: {e}")
 
-    def create_ticket(self, user_id, intent, mood, entities, missing_fields):
+    def calculate_severity(self, mood):
+        """Calculate ticket severity based on mood."""
+        if mood in ["Angry", "Urgent"]:
+            return "High"
+        elif mood == "Confused":
+            return "Medium"
+        return "Low"
+
+    def create_ticket(self, user_id, intent, mood, entities, missing_fields, severity=None):
         """Create and store a new ticket."""
-        ticket = Ticket(user_id, intent, mood, entities, missing_fields)
+        if severity is None:
+            severity = self.calculate_severity(mood)
+            
+        ticket = Ticket(user_id, intent, mood, entities, missing_fields, severity)
         self.tickets[user_id] = ticket
         self._save_tickets() # Persist immediately
         print(f"🎫 Ticket Created: {ticket.ticket_id} for User: {user_id}")
@@ -168,9 +182,10 @@ if __name__ == "__main__":
         "order_status", 
         "Neutral", 
         {}, 
-        ["order_id"]
+        ["order_id"],
+        severity="Low"
     )
-    print(f"   Status: {t.status}, Missing: {t.missing_fields}")
+    print(f"   Status: {t.status}, Severity: {t.severity}, Missing: {t.missing_fields}")
     
     # 2. Update
     print("\n2. Updating Ticket...")

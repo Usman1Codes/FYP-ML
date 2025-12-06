@@ -27,6 +27,7 @@ class FlowManager:
         
         # 1. Load Configs
         self.intent_config, self.mock_db, _ = DataLoader.load_configs(project_root)
+        print(f"   [DEBUG-FLOW] Intent Config Keys: {list(self.intent_config.keys())}")
         
         # 2. Initialize Components
         model_dir = os.path.join(project_root, "models")
@@ -62,6 +63,11 @@ class FlowManager:
             # We can wrap this in a template too if we want, but raw text is fine for now
             # Or use a generic 'faq_reply.j2'
             return faq_match['answer']
+        
+        # --- STEP 1.5: FAQ FALLBACK (Human Handoff) ---
+        # If no FAQ match, but we haven't classified intent yet.
+        # We will classify intent first. If intent is 'general_faq' BUT no FAQ match found,
+        # then we create a ticket for human vendor.
 
         # --- STEP 2: TICKET & INTENT MANAGEMENT ---
         ticket = self.ticket_manager.get_ticket(user_id)
@@ -87,19 +93,51 @@ class FlowManager:
             print(f"   🧠 Intent: {intent} ({confidence:.2f}) | Mood: {mood}")
             
             # Check Config for Requirements
+
             config = self.intent_config.get(intent)
+            
+            # FAQ FALLBACK LOGIC
+            # If intent is 'general_faq_question' (or similar) but we are here, it means FAQ Engine failed.
+            # OR if confidence is low.
+            if intent == "general_faq_question" or intent == "unknown":
+                print(f"   ⚠️ FAQ Failed & Intent is '{intent}'. Creating Human Handoff Ticket.")
+                intent = "human_handoff"
+                required_entities = [] # No specific entities needed, just the query
+                
+                # Create Ticket with Severity
+                severity = self.ticket_manager.calculate_severity(mood)
+                ticket = self.ticket_manager.create_ticket(
+                    user_id=user_id,
+                    intent=intent,
+                    mood=mood,
+                    entities={"query": text}, # Store the query
+                    missing_fields=[],
+                    severity=severity
+                )
+                ticket.add_message("user", text)
+                
+                # Immediate Response for Handoff (Using Template)
+                return self.template_engine.render("email_unknown_intent.j2", {
+                    "context": {
+                        "ticket_id": ticket.ticket_id,
+                        "severity": severity
+                    }
+                })
+
             if not config:
                 return "I'm sorry, I didn't understand that request. Could you rephrase?"
                 
             required_entities = config.get("required_entities", [])
             
-            # Create Ticket
+            # Create Ticket (Standard Flow)
+            severity = self.ticket_manager.calculate_severity(mood)
             ticket = self.ticket_manager.create_ticket(
                 user_id=user_id,
                 intent=intent,
                 mood=mood,
                 entities={},
-                missing_fields=required_entities
+                missing_fields=required_entities,
+                severity=severity
             )
             ticket.add_message("user", text)
 
@@ -134,19 +172,43 @@ class FlowManager:
 
         if ticket.is_complete():
             print("   ✅ Ticket Complete. Executing Action...")
-            # Execute Action via StateManager
-            action_result = self.state_manager.process_request(ticket.intent, ticket.extracted_entities)
             
-            # Update Context with Action Result
-            context["state"] = action_result["state"]
-            context["data"].update(action_result["data"]) # Merge result data (e.g. status, tracking)
+            # EDGE CASE 3: System Error Handling
+            try:
+                # Execute Action via StateManager
+                action_result = self.state_manager.process_request(ticket.intent, ticket.extracted_entities)
+                print(f"   [DEBUG] Action Result: {action_result}")
+                
+                # Update Context with Action Result
+                context["state"] = action_result["state"]
+                context["data"].update(action_result["data"]) # Merge result data (e.g. status, tracking)
+                
+                # Handle Specific Error States from StateManager
+                if action_result["state"] == "error":
+                     # Could be DB error or Config error
+                     print("   ❌ System Error Detected.")
+                     return self.template_engine.render("email_system_error.j2", {
+                         "context": {"ticket_id": ticket.ticket_id}
+                     })
+                elif action_result["state"] == "invalid_format":
+                     # EDGE CASE 2: Invalid Data Format
+                     print(f"   ⚠️ Invalid Format: {action_result.get('missing', 'Unknown Field')}")
+                     return self.template_engine.render("email_invalid_format.j2", {
+                         "data": {"field_name": action_result.get("missing", ["Unknown"])[0]}
+                     })
+
+            except Exception as e:
+                print(f"   ❌ CRITICAL SYSTEM ERROR: {e}")
+                return self.template_engine.render("email_system_error.j2", {
+                    "context": {"ticket_id": ticket.ticket_id}
+                })
             
             # Select Template based on Intent
             # We need a mapping or convention. 
             # Convention: 'email_{intent}.j2' ? Or just hardcode for now.
             template_name = "email_base.j2" # Fallback
             
-            if ticket.intent == "order_status":
+            if ticket.intent == "order_status_inquiry":
                 template_name = "email_order_status.j2"
             # Add more mappings here as we add templates
             
@@ -190,3 +252,14 @@ if __name__ == "__main__":
     # Scenario 3: Order Status (Reply)
     print("\n--- TEST 3: Order Status (Reply) ---")
     print(manager.process_email("bob@example.com", "It is order #1001."))
+
+    # Scenario 4: FAQ Fallback (Unknown Question)
+    print("\n--- TEST 4: FAQ Fallback (Human Handoff) ---")
+    # "How do I fly to the moon?" is not in KB. Should trigger ticket.
+    # Mood: Neutral -> Low Severity
+    print(manager.process_email("charlie@example.com", "How do I fly to the moon?"))
+    
+    # Scenario 5: FAQ Fallback (Angry)
+    print("\n--- TEST 5: FAQ Fallback (Angry) ---")
+    # Mood: Angry -> High Severity
+    print(manager.process_email("dave@example.com", "I am furious! Why is your product so bad? Explain!"))

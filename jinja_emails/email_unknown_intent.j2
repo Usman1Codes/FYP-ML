@@ -1,0 +1,15 @@
+{# templates/email_unknown_intent.j2 #}
+{% extends "email_base.j2" %}
+
+{% block content %}
+I have reviewed your message, but I am not entirely sure how to best assist you with this specific request.
+
+As an AI assistant, I am best at helping with:
+*   Checking **Order Status**
+*   Providing **Product Information**
+*   Answering questions about **Returns & Shipping**
+
+Since I couldn't find a clear match, I have created a **{{ context.severity|default('Low') }} Priority Ticket** (#{{ context.ticket_id }}) for our human support team. They will review your message and get back to you shortly.
+
+If you have a different question, please feel free to reply directly to this email.
+{% endblock %}

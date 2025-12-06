@@ -1,0 +1,10 @@
+{# templates/email_system_error.j2 #}
+{% extends "email_base.j2" %}
+
+{% block content %}
+I apologize, but I am currently experiencing some technical difficulties accessing our records.
+
+Please rest assured that I have logged this issue and created a **High Priority Ticket** (#{{ context.ticket_id }}) for our technical team. You do not need to take any further action.
+
+We will contact you as soon as this is resolved. Thank you for your patience.
+{% endblock %}

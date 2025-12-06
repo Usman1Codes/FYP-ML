@@ -48,6 +48,7 @@ class StateManager:
 
         # 3. Execute Action (Dispatch)
         action = config.get("action_type")
+        print(f"   [DEBUG-STATE] Intent: {intent}, Action: {action}, Extracted: {extracted_data}")
         
         if action == "lookup_order":
             return self._lookup_order(extracted_data["order_id"])
@@ -68,8 +69,23 @@ class StateManager:
 
     # --- INTERNAL ACTION HANDLERS ---
     
+    def _validate_order_id(self, order_id):
+        """Check if order ID format is valid."""
+        # Allow: #12345, ORD-123, or just digits 12345
+        if not order_id: return False
+        if order_id.startswith("#") or order_id.upper().startswith("ORD-") or order_id.isdigit():
+            return True
+        # Also allow alphanumeric if it looks like a hash (e.g. 5 chars+)
+        if len(order_id) >= 4 and any(c.isdigit() for c in order_id):
+            return True
+        return False
+
     def _lookup_order(self, order_id):
         """Look up an order in the database."""
+        # EDGE CASE 2: Validation
+        if not self._validate_order_id(order_id):
+            return {"state": "invalid_format", "data": {}, "missing": ["Order ID"]}
+
         orders = self.db.get("orders", [])
         result = next((item for item in orders if item["order_id"] == order_id), None)
         

@@ -1,0 +1,10 @@
+{
+  "labels": [
+    "Angry",
+    "Confused",
+    "Happy",
+    "Neutral",
+    "Urgent"
+  ],
+  "normalize_embeddings": false
+}
