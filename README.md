@@ -199,7 +199,7 @@ The trained model is exported as a zip file and extracted to `models/v2_setfit/`
 ### 3. ⚠️ Model Setup (CRITICAL)
 The **Mood Detection Model** (SetFit) is too large for GitHub. You must download it separately.
 
-1.  **Download the Model**: [INSERT_GOOGLE_DRIVE_LINK_HERE]
+1.  **Download the Model**: [https://drive.google.com/drive/folders/1ZbHSGBrnqhufV58BtNnMtBxLlyK6-bEZ?usp=sharing]
 2.  **Extract**: Unzip the folder.
 3.  **Place**: Move the contents into `models/mood_model/`.
     *   Structure should look like: `models/mood_model/model.safetensors`, `config.json`, etc.
